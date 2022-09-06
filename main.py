@@ -1,6 +1,4 @@
 
-
-
 import foo
 from classes import City
 
@@ -48,18 +46,34 @@ if __name__ == '__main__':
   initialPopulation = foo.getInitialPopulation(cities)
   for pop in initialPopulation:
     print(f"{pop}: ( ", end="")
-    for neighbor in initialPopulation[pop]:
+    for neighbor in initialPopulation[pop]['path']:
       print(f"{neighbor['city'].getId()}", end=" ")
     
     print(")")
 
   # os.system("pause")
+  populationWithFitness, sumOfFitness = foo.calculateFitness(initialPopulation)
+  for pop in populationWithFitness:
+    print(f"{pop}: ( ", end="")
+    for neighbor in populationWithFitness[pop]['path']:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    
+    print(f"), {populationWithFitness[pop]['fitness']}")
 
-  fitness = foo.calculateFitness(initialPopulation)
-  for fit in fitness:
-    print(f"{fit}: {fitness[fit]}")
+  parents = foo.selectParents(populationWithFitness, sumOfFitness)
+  
+  for parent in parents:
+    print(f"( ", end="")
+    for neighbor in parent:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    
+    print(")")
+  
+  childrens = foo.crossover(parents)
+  
+  bestSolution = populationWithFitness[list (populationWithFitness.keys())[0]]
+  for population in populationWithFitness:
+    if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
+      bestSolution = populationWithFitness[population]
 
-  parents = foo.selectParents(fitness)
-
-
-
+  newPopulation = childrens + bestSolution["path"]
