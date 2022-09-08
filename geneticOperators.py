@@ -3,6 +3,43 @@ import random
 from classes import City
 
 
+def initCities():
+  city1 = City(1)
+  city2 = City(2)
+  city3 = City(3)
+  city4 = City(4)
+  city5 = City(5)
+  city1.setNeighborhood([
+    {"city": city2, "distance": 2},
+    {"city": city4, "distance": 3},
+    {"city": city5, "distance": 6}
+  ])
+  city2.setNeighborhood([
+    {"city": city1, "distance": 2},
+    {"city": city3, "distance":4},
+    {"city": city4, "distance": 3}
+  ])
+  city3.setNeighborhood([
+    {"city": city2, "distance": 4},
+    {"city": city4, "distance": 7},
+    {"city": city5, "distance": 3}
+  ])
+
+  city4.setNeighborhood([
+    {"city": city1, "distance": 3},
+    {"city": city2, "distance": 3},
+    {"city": city3, "distance": 7},
+    {"city": city5, "distance": 3}
+  ])
+
+  city5.setNeighborhood([
+    {"city": city1, "distance": 6},
+    {"city": city3, "distance": 3},
+    {"city": city4, "distance": 3}
+  ])
+
+  return [city1, city2, city3, city4, city5]
+
 def generateInitialPopulation(cities, populationSize=10):
   citiesCopy = cities
   population = {}
@@ -51,7 +88,7 @@ def calculateFitness(population: dict):
     for i in range(len(populationWithFitness[individual]['path'])):
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
-      print(f"Aptidão parcial da indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
+      print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
 
     print(f"Aptidão final do indivíduo {control}: {populationWithFitness[individual]['fitness']}\n")
     control += 1
@@ -59,7 +96,6 @@ def calculateFitness(population: dict):
     sum += 1/populationWithFitness[individual]["fitness"]
 
   return populationWithFitness, sum
-# python -u "c:\Users\cassi\Documents\UFPI\Disciplinas\5P\InteligenciaArtificial\Trabalhos\TrabalhoPratico2\TravelingSalesmanProblem-GeneticAlgorithm\main.py"
 
 def selectParents(population: dict, sumOfFitness):
   parents = []
@@ -70,8 +106,8 @@ def selectParents(population: dict, sumOfFitness):
     for neighbor in population[pop]['path']:
       absoluteFitness = 1 / population[pop]["fitness"]
       weights.append(absoluteFitness/sumOfFitness)
-      values.append(population[pop]["path"]) 
-  print(len(list(population.keys())))
+      values.append(population[pop]) 
+
   while len(parents) <= len(list(population.keys())) - 1:
     parent = random.choices(values, weights=weights, k=1)
     parents.append(parent[0])
@@ -100,37 +136,52 @@ def isValidSolution(solution):
 
 def crossover(parents: list):
   childrens = []
-  validsSolutions = 0
-  print(len(parents))
   while len(childrens) < len(parents) - 1:
     parent1 = random.choice(parents)
     parent2 = random.choice(parents)
 
-    cutoff = random.randint(0, len(parent1) - 1)
+    cutoff = random.randint(1, len(parent1) - 1)
 
-    child1 = parent1[:cutoff] + parent2[cutoff:]
-    child2 = parent1[cutoff:] + parent2[:cutoff]
+    print(f"Ponto de corte: {cutoff}")
+    print("Pais selecionados:")
+    control = 0
+    for city in parent1['path']:
+      if control == cutoff: print("|", end=" ")
+      print(city["city"].getId(), end=" ")
+      control += 1
+    print()
+    control = 0
+    for city in parent2['path']:
+      if control == cutoff: print("|", end=" ")
+      print(city["city"].getId(), end=" ")
+      control += 1
+    print()
 
+    child1 = parent1['path'][:cutoff] + parent2['path'][cutoff:]
+    child2 = parent1['path'][cutoff:] + parent2['path'][:cutoff]
+
+    print("Filho(s) gerado(s):") if isValidSolution(child1) or isValidSolution(child2) else print("Filhos gerados inválidos!")
+    
     if isValidSolution(child1) and len(childrens) <= len(parents) - 2:
-      childrens.append(child1)
       for city in child1:
-        print(city['city'].getId(), end=" ")
+        print(city["city"].getId(), end=" ")
       print()
-      validsSolutions += 1
-    if isValidSolution(child2) and len(childrens) <= len(parents) - 2:
-      childrens.append(child2)
-      for city in child2:
-        print(city['city'].getId(), end=" ")
-      print()
-      validsSolutions += 1
+      childrens.append(child1)
 
-  print(f"Quantidade de soluções válidas: {validsSolutions}")
-  print(len(childrens))
+    if not (isValidSolution(child2) and len(childrens) <= len(parents) - 2): print()
+
+    if isValidSolution(child2) and len(childrens) <= len(parents) - 2:
+      for city in child2:
+        print(city["city"].getId(), end=" ")
+      print("\n")
+      childrens.append(child2)
+      
+
   return childrens
 
-def mutation(childrens: list):
+def mutation(childrens: list, mutationRate = 0.05):
   for child in childrens:
-    if random.random() <= 0.05:
+    if random.random() <= mutationRate:
       while True:
         city1 = random.choice(child)
         city2 = random.choice(child)
