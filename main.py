@@ -5,4 +5,12 @@ from geneticOperators import initCities
 if __name__ == '__main__':
   cities = initCities()
   
-  executeGeneticAlgorithm(cities, 2, 5)
+  population, generation = executeGeneticAlgorithm(cities, 100, 50)
+
+  print(f"População final após {generation} gerações")
+  for pop in population:
+    print(f"{pop}: ( ", end="")
+    for neighbor in population[pop]['path']:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    print(") - Aptidão: ", population[pop]['fitness'])
+

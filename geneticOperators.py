@@ -16,7 +16,7 @@ def initCities():
   ])
   city2.setNeighborhood([
     {"city": city1, "distance": 2},
-    {"city": city3, "distance":4},
+    {"city": city3, "distance": 4},
     {"city": city4, "distance": 3}
   ])
   city3.setNeighborhood([

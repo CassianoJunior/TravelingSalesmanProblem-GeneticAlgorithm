@@ -3,7 +3,7 @@ from classes import City
 
 
 def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRate = 0.05):
-  initialPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
+  actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
 
   bigHorse = {'path': [], 'fitness': 0}
@@ -11,9 +11,9 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
     print(f"Geração: {iterations}\n")
     iterations += 1
     print("População")
-    for pop in initialPopulation:
+    for pop in actualPopulation:
       print(f"{pop}: ( ", end="")
-      for neighbor in initialPopulation[pop]['path']:
+      for neighbor in actualPopulation[pop]['path']:
         print(f"{neighbor['city'].getId()}", end=" ")
       
       print(")")
@@ -25,7 +25,7 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
 
     # os.system("pause")
 
-    populationWithFitness, sumOfFitness = geneticOperators.calculateFitness(initialPopulation)
+    populationWithFitness, sumOfFitness = geneticOperators.calculateFitness(actualPopulation)
     for pop in populationWithFitness:
       print(f"{pop}: ( ", end="")
       for neighbor in populationWithFitness[pop]['path']:
@@ -82,12 +82,16 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
         "path": childrens[i],
         "fitness": 0
       }
-    newPopulation[f'indivíduo{len(childrens) + 1} (GARANHÃO)'] = {
+    newPopulation[f'indivíduo{len(childrens) + 1} (GARANHÃO anterior)'] = {
       "path": bestSolution["path"],
       "fitness": 0
     }
     
-    initialPopulation = newPopulation
+    if isStagnant(actualPopulation, bigHorse['fitness']): break
+
+    actualPopulation = newPopulation
+
+  return actualPopulation, iterations
 
 def listOfChildsMutateds(childrens, oldChildrens):
   mutateds = []
@@ -97,3 +101,15 @@ def listOfChildsMutateds(childrens, oldChildrens):
         mutateds.append(child)
   
   return mutateds
+
+def isStagnant(population, bestFitness):
+  allFitness = []
+  for pop in population:
+    allFitness.append(population[pop]['fitness'])
+
+  for fitness in allFitness:
+    quant = allFitness.count(fitness)
+    if quant >= len(list(population.keys()))*0.8 and fitness <= bestFitness and bestFitness != 0:
+      return True
+
+  return False
