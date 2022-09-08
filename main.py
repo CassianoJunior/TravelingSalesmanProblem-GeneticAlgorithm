@@ -43,7 +43,7 @@ def initCities():
 if __name__ == '__main__':
   cities = initCities()
   
-  initialPopulation = foo.getInitialPopulation(cities)
+  initialPopulation = foo.generateInitialPopulation(cities, 5)
   for pop in initialPopulation:
     print(f"{pop}: ( ", end="")
     for neighbor in initialPopulation[pop]['path']:
@@ -76,4 +76,38 @@ if __name__ == '__main__':
     if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
       bestSolution = populationWithFitness[population]
 
-  newPopulation = childrens + bestSolution["path"]
+  for child in childrens:
+    print(f"( ", end="")
+    for neighbor in child:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    
+    print(")")
+
+  childrens = foo.mutation(childrens)
+
+  print("Mutateds:")
+  for child in childrens:
+    print(f"( ", end="")
+    for neighbor in child:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    
+    print(")")
+
+  newPopulation = {}
+  for i in range(len(childrens)):
+    newPopulation[f'indivíduo{i+1}'] = {
+      "path": childrens[i],
+      "fitness": 0
+    }
+  newPopulation[f'indivíduo{len(childrens) + 1}(GARANHÃO)'] = {
+    "path": bestSolution["path"],
+    "fitness": bestSolution["fitness"]
+  }
+
+  print("New Population:")
+  for pop in newPopulation:
+    print(f"{pop}: ( ", end="")
+    for neighbor in newPopulation[pop]['path']:
+      print(f"{neighbor['city'].getId()}", end=" ")
+    
+    print(f") - fitness: {newPopulation[pop]['fitness']}")

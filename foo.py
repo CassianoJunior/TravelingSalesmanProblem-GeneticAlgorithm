@@ -3,11 +3,12 @@ import random
 from classes import City
 
 
-def getInitialPopulation(cities):
+def generateInitialPopulation(cities, populationSize=10):
   citiesCopy = cities
   population = {}
 
-  for city in citiesCopy:
+  for i in range(populationSize):
+    city = random.choice(citiesCopy)
     path = [{"city": city, "distance": 0}]
     actualCity = city
     while len(path) != 5:
@@ -29,7 +30,7 @@ def getInitialPopulation(cities):
         path.append(randomNeighbor)
         actualCity = randomNeighbor["city"]
 
-    population[f"indivíduo{str(city.getId())}"] = {"path": path, "fitness": 0}
+    population[f"indivíduo{i+1}"] = {"path": path, "fitness": 0}
 
   return population
 
@@ -70,8 +71,8 @@ def selectParents(population: dict, sumOfFitness):
       absoluteFitness = 1 / population[pop]["fitness"]
       weights.append(absoluteFitness/sumOfFitness)
       values.append(population[pop]["path"]) 
-  
-  while len(parents) != 4:
+  print(len(list(population.keys())))
+  while len(parents) <= len(list(population.keys())) - 1:
     parent = random.choices(values, weights=weights, k=1)
     parents.append(parent[0])
 
@@ -99,16 +100,50 @@ def isValidSolution(solution):
 
 def crossover(parents: list):
   childrens = []
-  for i in range(0, len(parents), 2):
-    child1 = parents[i][:3] + parents[i+1][3:]
-    child2 = parents[i][3:] + parents[i+1][:3]
-    childrens.append(child1)
-    childrens.append(child2)
-    for child in childrens:
-      for city in child:
+  validsSolutions = 0
+  print(len(parents))
+  while len(childrens) < len(parents) - 1:
+    parent1 = random.choice(parents)
+    parent2 = random.choice(parents)
+
+    cutoff = random.randint(0, len(parent1) - 1)
+
+    child1 = parent1[:cutoff] + parent2[cutoff:]
+    child2 = parent1[cutoff:] + parent2[:cutoff]
+
+    if isValidSolution(child1) and len(childrens) <= len(parents) - 2:
+      childrens.append(child1)
+      for city in child1:
         print(city['city'].getId(), end=" ")
       print()
-    print(isValidSolution(child1))
-    print(isValidSolution(child2))
-  
+      validsSolutions += 1
+    if isValidSolution(child2) and len(childrens) <= len(parents) - 2:
+      childrens.append(child2)
+      for city in child2:
+        print(city['city'].getId(), end=" ")
+      print()
+      validsSolutions += 1
+
+  print(f"Quantidade de soluções válidas: {validsSolutions}")
+  print(len(childrens))
   return childrens
+
+def mutation(childrens: list):
+  for child in childrens:
+    if random.random() <= 0.05:
+      while True:
+        city1 = random.choice(child)
+        city2 = random.choice(child)
+
+        index1 = child.index(city1)
+        index2 = child.index(city2)
+
+        child[index1] = city2
+        child[index2] = city1
+
+        if isValidSolution(child): break
+        child[index1] = city1
+        child[index2] = city2
+
+  return childrens
+
