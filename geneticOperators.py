@@ -84,7 +84,7 @@ def calculateFitness(population: dict):
   control = 1
   sum = 0
   for individual in populationWithFitness:
-
+  
     for i in range(len(populationWithFitness[individual]['path'])):
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
