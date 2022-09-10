@@ -1,4 +1,3 @@
-from classes import City
 from geneticAlgorithm import executeGeneticAlgorithm
 from geneticOperators import initCities
 
