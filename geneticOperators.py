@@ -84,12 +84,11 @@ def calculateFitness(population: dict[str, IndividualType]) -> dict[str, Individ
   populationWithFitness = population
   control = 1
   sum = 0
-
   for individual in populationWithFitness:
     for i in range(len(populationWithFitness[individual]['path'])):
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
-      print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
+      # print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
 
     print(f"Aptidão final do indivíduo {control}: {populationWithFitness[individual]['fitness']}\n")
     control += 1
@@ -141,7 +140,7 @@ def crossover(parents: list[IndividualType]) -> list[IndividualType]:
     parent1 = random.choice(parents)
     parent2 = random.choice(parents)
 
-    cutoff = random.randint(1, len(parent1) - 1)
+    cutoff = random.randint(1, len(parent1["path"]) - 1)
 
     print(f"Ponto de corte: {cutoff}")
     print("Pais selecionados:")
