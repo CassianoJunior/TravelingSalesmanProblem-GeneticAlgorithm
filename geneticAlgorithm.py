@@ -87,7 +87,7 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       "fitness": 0
     }
     
-    if isStagnant(actualPopulation, bigHorse['fitness']): break
+    if isStagnant(actualPopulation, bigHorse['fitness']) or iterations + 1 >= generations : break
 
     actualPopulation = newPopulation
 

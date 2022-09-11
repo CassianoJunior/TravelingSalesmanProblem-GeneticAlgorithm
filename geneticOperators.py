@@ -78,7 +78,6 @@ def cityIsInPath(city, path):
 
   return False
 
-
 def calculateFitness(population: dict):
   populationWithFitness = population
   control = 1
