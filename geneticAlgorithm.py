@@ -1,10 +1,11 @@
 import geneticOperators
 from classes import City
-
+from os import system
 
 def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05):
   actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
+  stopCodeExecution = True
 
   bigHorse = {'path': [], 'fitness': 0}
   while iterations <= generations:
@@ -23,7 +24,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       print(f"{neighbor['city'].getId()}", end=" ")
     print(f") - Aptidão: {bigHorse['fitness']}\n")
 
-    # os.system("pause")
+    stopCodeExecution = showPausedMode(stopCodeExecution)
 
     populationWithFitness, sumOfFitness = geneticOperators.calculateFitness(actualPopulation)
     for pop in populationWithFitness:
@@ -32,6 +33,8 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
         print(f"{neighbor['city'].getId()}", end=" ")
       
       print(f") - Aptidão: {populationWithFitness[pop]['fitness']} - Probabilidade: {((1/populationWithFitness[pop]['fitness'])/sumOfFitness*100):.2f}%")
+    print()
+    stopCodeExecution = showPausedMode(stopCodeExecution)
 
     parents = geneticOperators.selectParents(populationWithFitness, sumOfFitness)
     
@@ -43,6 +46,15 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       
       print(f") - Aptidão: {parent['fitness']} - Probabilidade: {((1/parent['fitness'])/sumOfFitness*100):.2f}%")
     
+    stopCodeExecution = showPausedMode(stopCodeExecution)
+
+    bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
+
+    for population in populationWithFitness:
+      if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
+        bestSolution = populationWithFitness[population]
+        bigHorse = bestSolution
+
     childrens = geneticOperators.crossover(parents, cities)
     
     print("Filhos resultantes do cruzamento:")
@@ -77,6 +89,8 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
     else:
       print("Nenhum indivíduo sofreu mutação")
     
+    stopCodeExecution = showPausedMode(stopCodeExecution)
+
     newPopulation = {}
     for i in range(len(childrens)):
       newPopulation[f'indivíduo{i+1}'] = {
@@ -114,3 +128,11 @@ def isStagnant(population, bestFitness):
       return True
 
   return False
+
+def showPausedMode(stopCodeExecution):
+  if stopCodeExecution:
+      answer = input("Deseja continuar a execução do programa de forma pausada?(s/n) ")
+      print()
+      if(answer == 'n'):
+        stopCodeExecution = False
+  return stopCodeExecution
