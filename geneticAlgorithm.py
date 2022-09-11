@@ -2,7 +2,7 @@ import geneticOperators
 from classes import City
 from os import system
 
-def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRate = 0.05):
+def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05):
   actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
   stopCodeExecution = True
@@ -46,9 +46,6 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       
       print(f") - Aptidão: {parent['fitness']} - Probabilidade: {((1/parent['fitness'])/sumOfFitness*100):.2f}%")
     
-
-    childrens = geneticOperators.crossover(parents)
-    
     stopCodeExecution = showPausedMode(stopCodeExecution)
 
     bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
@@ -58,6 +55,8 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
         bestSolution = populationWithFitness[population]
         bigHorse = bestSolution
 
+    childrens = geneticOperators.crossover(parents, cities)
+    
     print("Filhos resultantes do cruzamento:")
     for child in childrens:
       print(f"( ", end="")
@@ -66,8 +65,16 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       
       print(")")
     print()
-
+    
     childrensCopy = childrens
+    
+    bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
+
+    for population in populationWithFitness:
+      if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
+        bestSolution = populationWithFitness[population]
+        bigHorse = bestSolution
+
     childrens = geneticOperators.mutation(childrens, mutationRate)
 
     mutateds = listOfChildsMutateds(childrens, childrensCopy)
@@ -95,7 +102,7 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       "fitness": 0
     }
     
-    if isStagnant(actualPopulation, bigHorse['fitness']): break
+    if isStagnant(actualPopulation, bigHorse['fitness']) or iterations + 1 >= generations : break
 
     actualPopulation = newPopulation
 

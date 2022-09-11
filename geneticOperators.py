@@ -1,9 +1,10 @@
 import random
 
 from classes import City
+from unionTypes import *
 
 
-def initCities():
+def initCities() -> list[City]:
   city1 = City(1)
   city2 = City(2)
   city3 = City(3)
@@ -40,7 +41,7 @@ def initCities():
 
   return [city1, city2, city3, city4, city5]
 
-def generateInitialPopulation(cities, populationSize=10):
+def generateInitialPopulation(cities: list[City], populationSize: int = 10) -> dict[str, IndividualType]:
   citiesCopy = cities
   population = {}
 
@@ -71,7 +72,7 @@ def generateInitialPopulation(cities, populationSize=10):
 
   return population
 
-def cityIsInPath(city, path):
+def cityIsInPath(city: City, path: list[PathType]) -> bool:
   for pathCity in path:
     if pathCity["city"].getId() == city.getId():
       return True
@@ -79,12 +80,11 @@ def cityIsInPath(city, path):
   return False
 
 
-def calculateFitness(population: dict):
+def calculateFitness(population: dict[str, IndividualType]) -> dict[str, IndividualType]:
   populationWithFitness = population
   control = 1
   sum = 0
   for individual in populationWithFitness:
-  
     for i in range(len(populationWithFitness[individual]['path'])):
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
@@ -97,7 +97,7 @@ def calculateFitness(population: dict):
 
   return populationWithFitness, sum
 
-def selectParents(population: dict, sumOfFitness):
+def selectParents(population: dict[str, IndividualType], sumOfFitness: int) -> list[IndividualType]:
   parents = []
   weights = []
   values = []
@@ -114,7 +114,7 @@ def selectParents(population: dict, sumOfFitness):
 
   return parents
 
-def isValidSolution(solution):
+def isValidSolution(solution: list[PathType]) -> bool:
   citiesIds = []
   for neighbor in solution:
     citiesIds.append(neighbor["city"].getId())
@@ -134,13 +134,31 @@ def isValidSolution(solution):
 
   return True
 
-def crossover(parents: list):
+def recalculatePath(childPath: list[dict[City, str]], cities: list[City]):
+  listID = []
+  for child in childPath:
+    listID.append(child["city"].getId())
+
+  childPathRecalculated = []
+  for i in range(len(listID)):
+    for city in cities:
+      if city.getId() == listID[i]:
+        if i == 0: 
+          childPathRecalculated.append({"city": city, "distance": 0})
+        else:
+          previousNeighbor = city.getNeighbor(listID[i-1])
+          distanceToNeighbor = previousNeighbor["distance"]
+          childPathRecalculated.append({"city": city, "distance": distanceToNeighbor})
+  
+  return childPathRecalculated
+
+def crossover(parents: list[IndividualType]) -> list[IndividualType]:
   childrens = []
   while len(childrens) < len(parents) - 1:
     parent1 = random.choice(parents)
     parent2 = random.choice(parents)
 
-    cutoff = random.randint(1, len(parent1) - 1)
+    cutoff = random.randint(1, len(parent1["path"]) - 1)
 
     print(f"Ponto de corte: {cutoff}")
     print("Pais selecionados:")
@@ -163,23 +181,26 @@ def crossover(parents: list):
     print("Filho(s) gerado(s):") if isValidSolution(child1) or isValidSolution(child2) else print("Filhos gerados inválidos!")
     
     if isValidSolution(child1) and len(childrens) <= len(parents) - 2:
-      for city in child1:
+      child1Recalculated = recalculatePath(child1, cities)
+              
+      for city in child1Recalculated:
         print(city["city"].getId(), end=" ")
       print()
-      childrens.append(child1)
+      childrens.append(child1Recalculated)
 
     if not (isValidSolution(child2) and len(childrens) <= len(parents) - 2): print()
 
     if isValidSolution(child2) and len(childrens) <= len(parents) - 2:
-      for city in child2:
+      child2Recalculated = recalculatePath(child2, cities)
+
+      for city in child2Recalculated:
         print(city["city"].getId(), end=" ")
       print("\n")
-      childrens.append(child2)
+      childrens.append(child2Recalculated)
       
-
   return childrens
 
-def mutation(childrens: list, mutationRate = 0.05):
+def mutation(childrens: list[IndividualType], mutationRate: float = 0.05):
   for child in childrens:
     if random.random() <= mutationRate:
       while True:
