@@ -43,7 +43,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       
       print(f") - Aptidão: {parent['fitness']} - Probabilidade: {((1/parent['fitness'])/sumOfFitness*100):.2f}%")
     
-    childrens = geneticOperators.crossover(parents)
+    childrens = geneticOperators.crossover(parents, cities)
     
     print("Filhos resultantes do cruzamento:")
     for child in childrens:
@@ -88,7 +88,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       "fitness": 0
     }
     
-    if isStagnant(actualPopulation, bigHorse['fitness']): break
+    if isStagnant(actualPopulation, bigHorse['fitness']) or iterations + 1 >= generations : break
 
     actualPopulation = newPopulation
 

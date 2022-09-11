@@ -88,7 +88,7 @@ def calculateFitness(population: dict[str, IndividualType]) -> dict[str, Individ
     for i in range(len(populationWithFitness[individual]['path'])):
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
-      # print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
+      print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
 
     print(f"Aptidão final do indivíduo {control}: {populationWithFitness[individual]['fitness']}\n")
     control += 1
@@ -134,6 +134,24 @@ def isValidSolution(solution: list[PathType]) -> bool:
 
   return True
 
+def recalculatePath(childPath: list[dict[City, str]], cities: list[City]):
+  listID = []
+  for child in childPath:
+    listID.append(child["city"].getId())
+
+  childPathRecalculated = []
+  for i in range(len(listID)):
+    for city in cities:
+      if city.getId() == listID[i]:
+        if i == 0: 
+          childPathRecalculated.append({"city": city, "distance": 0})
+        else:
+          previousNeighbor = city.getNeighbor(listID[i-1])
+          distanceToNeighbor = previousNeighbor["distance"]
+          childPathRecalculated.append({"city": city, "distance": distanceToNeighbor})
+  
+  return childPathRecalculated
+
 def crossover(parents: list[IndividualType]) -> list[IndividualType]:
   childrens = []
   while len(childrens) < len(parents) - 1:
@@ -163,18 +181,22 @@ def crossover(parents: list[IndividualType]) -> list[IndividualType]:
     print("Filho(s) gerado(s):") if isValidSolution(child1) or isValidSolution(child2) else print("Filhos gerados inválidos!")
     
     if isValidSolution(child1) and len(childrens) <= len(parents) - 2:
-      for city in child1:
+      child1Recalculated = recalculatePath(child1, cities)
+              
+      for city in child1Recalculated:
         print(city["city"].getId(), end=" ")
       print()
-      childrens.append(child1)
+      childrens.append(child1Recalculated)
 
     if not (isValidSolution(child2) and len(childrens) <= len(parents) - 2): print()
 
     if isValidSolution(child2) and len(childrens) <= len(parents) - 2:
-      for city in child2:
+      child2Recalculated = recalculatePath(child2, cities)
+
+      for city in child2Recalculated:
         print(city["city"].getId(), end=" ")
       print("\n")
-      childrens.append(child2)
+      childrens.append(child2Recalculated)
       
   return childrens
 
