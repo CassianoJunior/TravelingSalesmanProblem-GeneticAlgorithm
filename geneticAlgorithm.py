@@ -2,7 +2,7 @@ import geneticOperators
 from classes import City
 
 
-def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRate = 0.05):
+def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05):
   actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
 
@@ -45,13 +45,6 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
     
     childrens = geneticOperators.crossover(parents, cities)
     
-    bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
-
-    for population in populationWithFitness:
-      if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
-        bestSolution = populationWithFitness[population]
-        bigHorse = bestSolution
-
     print("Filhos resultantes do cruzamento:")
     for child in childrens:
       print(f"( ", end="")
@@ -60,8 +53,16 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       
       print(")")
     print()
-
+    
     childrensCopy = childrens
+    
+    bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
+
+    for population in populationWithFitness:
+      if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
+        bestSolution = populationWithFitness[population]
+        bigHorse = bestSolution
+
     childrens = geneticOperators.mutation(childrens, mutationRate)
 
     mutateds = listOfChildsMutateds(childrens, childrensCopy)

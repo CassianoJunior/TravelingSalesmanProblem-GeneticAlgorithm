@@ -3,10 +3,10 @@ class City:
     self.id = id
     self.neighborhood = []
   
-  def setNeighborhood(self, neighborhood):
+  def setNeighborhood(self, neighborhood: list[dict]):
     self.neighborhood = neighborhood
 
-  def getNeighborhood(self):
+  def getNeighborhood(self) -> list[dict]:
     return self.neighborhood
 
   def getNeighbor(self, neighborId):
@@ -15,7 +15,7 @@ class City:
         return neighbor
     return None
   
-  def getId(self):
+  def getId(self) -> int:
     return self.id
 
   def __str__(self):
