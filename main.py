@@ -5,7 +5,7 @@ from geneticOperators import initCities
 if __name__ == '__main__':
   cities = initCities()
   
-  population, generation = executeGeneticAlgorithm(cities, 100, 50)
+  population, generation = executeGeneticAlgorithm(cities, 5, 5)
 
   print(f"População final após {generation} gerações")
   for pop in population:

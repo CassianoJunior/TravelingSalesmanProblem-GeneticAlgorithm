@@ -43,7 +43,7 @@ def executeGeneticAlgorithm(cities, generations, populationSize = 10, mutationRa
       
       print(f") - Aptidão: {parent['fitness']} - Probabilidade: {((1/parent['fitness'])/sumOfFitness*100):.2f}%")
     
-    childrens = geneticOperators.crossover(parents)
+    childrens = geneticOperators.crossover(parents, cities)
     
     bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
 
