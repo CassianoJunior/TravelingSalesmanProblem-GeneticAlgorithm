@@ -1,17 +1,21 @@
 import geneticOperators
 from classes import City
-from os import system
+from colorVariables import *
+from unionTypes import *
 
-def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05):
+
+def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05) -> tuple[dict[str, IndividualType], int, PathDictionaryType]:
   actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
-  stopCodeExecution = True
+  isPausedExecution = False
 
   bigHorse = {'path': [], 'fitness': 0}
-  while iterations <= generations:
-    print(f"Geração: {iterations}\n")
+  while iterations < generations:
+    isPausedExecution = showPausedMode(isPausedExecution)
+
+    print(f"{BOLD + RED}\nGeração: {iterations} {RESET}\n")
     iterations += 1
-    print("População")
+    print(f"{BOLD}População{RESET}")
     for pop in actualPopulation:
       print(f"{pop}: ( ", end="")
       for neighbor in actualPopulation[pop]['path']:
@@ -19,12 +23,12 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       
       print(")")
 
-    print("Garanhão: ( ", end="")
+    print(f"{BOLD + CYAN}Garanhão: ( ", end="")
     for neighbor in bigHorse['path']:
-      print(f"{neighbor['city'].getId()}", end=" ")
-    print(f") - Aptidão: {bigHorse['fitness']}\n")
+      print(f"  {neighbor['city'].getId()}", end=" ")
+    print(f") - Aptidão: {bigHorse['fitness']} {RESET}\n")
 
-    stopCodeExecution = showPausedMode(stopCodeExecution)
+    if isPausedExecution: pauseCode("Pressione qualquer tecla para prosseguir para o cálculo da aptidão da população")
 
     populationWithFitness, sumOfFitness = geneticOperators.calculateFitness(actualPopulation)
     for pop in populationWithFitness:
@@ -34,11 +38,12 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       
       print(f") - Aptidão: {populationWithFitness[pop]['fitness']} - Probabilidade: {((1/populationWithFitness[pop]['fitness'])/sumOfFitness*100):.2f}%")
     print()
-    stopCodeExecution = showPausedMode(stopCodeExecution)
+
+    if isPausedExecution: pauseCode("Pressione qualquer tecla para prosseguir para a seleção dos pais (Seleção natural - Método: roleta)")
 
     parents = geneticOperators.selectParents(populationWithFitness, sumOfFitness)
     
-    print("Seleção dos pais")
+    print(f"{BOLD}Seleção dos pais{RESET}")
     for parent in parents:
       print(f"( ", end="")
       for neighbor in parent['path']:
@@ -46,7 +51,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
       
       print(f") - Aptidão: {parent['fitness']} - Probabilidade: {((1/parent['fitness'])/sumOfFitness*100):.2f}%")
     
-    stopCodeExecution = showPausedMode(stopCodeExecution)
+    if isPausedExecution: pauseCode("Pressione qualquer tecla para prosseguir para a geração dos filhos (crossover)")
 
     bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
 
@@ -57,7 +62,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
 
     childrens = geneticOperators.crossover(parents, cities)
     
-    print("Filhos resultantes do cruzamento:")
+    print(f"{BOLD}Filhos resultantes do cruzamento:{RESET}")
     for child in childrens:
       print(f"( ", end="")
       for neighbor in child:
@@ -75,11 +80,13 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
         bestSolution = populationWithFitness[population]
         bigHorse = bestSolution
 
+    if isPausedExecution: pauseCode("Pressione qualquer tecla para prosseguir para a mutação dos filhos")
+
     childrens = geneticOperators.mutation(childrens, mutationRate)
 
     mutateds = listOfChildsMutateds(childrens, childrensCopy)
     if len(mutateds) > 0:
-      print("Indivíduos que sofreram mutação:")
+      print(f"{BOLD}Indivíduos que sofreram mutação:{RESET} (Taxa de mutação: {mutationRate}%)")
       for child in mutateds:
         print(f"( ", end="")
         for neighbor in child:
@@ -87,28 +94,26 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
         
         print(")\n")
     else:
-      print("Nenhum indivíduo sofreu mutação")
+      print(f"{BOLD}Nenhum indivíduo sofreu mutação.{RESET} (Taxa de mutação: {mutationRate}%)")
     
-    stopCodeExecution = showPausedMode(stopCodeExecution)
-
     newPopulation = {}
     for i in range(len(childrens)):
       newPopulation[f'indivíduo{i+1}'] = {
         "path": childrens[i],
         "fitness": 0
       }
-    newPopulation[f'indivíduo{len(childrens) + 1} (GARANHÃO anterior)'] = {
+    newPopulation[f'indivíduo{len(childrens) + 1}*'] = {
       "path": bestSolution["path"],
       "fitness": 0
     }
     
-    if isStagnant(actualPopulation, bigHorse['fitness']) or iterations + 1 >= generations : break
+    if isStagnant(actualPopulation, bigHorse['fitness']) or iterations >= generations : break
 
     actualPopulation = newPopulation
 
-  return actualPopulation, iterations
+  return actualPopulation, iterations, bigHorse
 
-def listOfChildsMutateds(childrens, oldChildrens):
+def listOfChildsMutateds(childrens: list[IndividualType], oldChildrens: list[IndividualType]) -> list[IndividualType]:
   mutateds = []
   for child in range(len(childrens)):
     for neighbor in range(len(childrens[child])):
@@ -117,7 +122,7 @@ def listOfChildsMutateds(childrens, oldChildrens):
   
   return mutateds
 
-def isStagnant(population, bestFitness):
+def isStagnant(population: dict[str, IndividualType], bestFitness: int) -> bool:
   allFitness = []
   for pop in population:
     allFitness.append(population[pop]['fitness'])
@@ -129,10 +134,12 @@ def isStagnant(population, bestFitness):
 
   return False
 
-def showPausedMode(stopCodeExecution):
-  if stopCodeExecution:
-      answer = input("Deseja continuar a execução do programa de forma pausada?(s/n) ")
-      print()
-      if(answer == 'n'):
-        stopCodeExecution = False
-  return stopCodeExecution
+def showPausedMode(isPausedExecution: bool) -> bool:
+  if isPausedExecution:
+      answer = input("\nDeseja executar o programa de forma pausada?\n")
+      if(answer.lower() == 'n' or answer.lower() == 'nao' or answer.lower() == 'não'):
+        isPausedExecution = False
+  return isPausedExecution
+
+def pauseCode(msg: str):
+  input(f"\n{msg}...\n")

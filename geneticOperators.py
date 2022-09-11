@@ -49,7 +49,7 @@ def generateInitialPopulation(cities: list[City], populationSize: int = 10) -> d
     city = random.choice(citiesCopy)
     path = [{"city": city, "distance": 0}]
     actualCity = city
-    while len(path) != 5:
+    while len(path) != len(cities):
       citiesInNeighborhood = actualCity.getNeighborhood()
       randomNeighbor = random.choice(citiesInNeighborhood)
       allInPath = True
@@ -85,10 +85,13 @@ def calculateFitness(population: dict[str, IndividualType]) -> dict[str, Individ
   control = 1
   sum = 0
   for individual in populationWithFitness:
-    for i in range(len(populationWithFitness[individual]['path'])):
+    for i in range(1, len(populationWithFitness[individual]['path'])):
+      if i == 1:
+        populationWithFitness[individual]['fitness'] += populationWithFitness[individual]['path'][i-1]['distance']
+        
       populationWithFitness[individual]["fitness"] += populationWithFitness[individual]["path"][i]["distance"]
     
-      print(f"Aptidão parcial do indivíduo {control}, até cidade {populationWithFitness[individual]['path'][i]['city'].getId()}: {populationWithFitness[individual]['fitness']}")
+      print(f'Aptidão parcial do indivíduo {control} - cidade {populationWithFitness[individual]["path"][i-1]["city"].getId()} à {populationWithFitness[individual]["path"][i]["city"].getId()}: {populationWithFitness[individual]["fitness"]}')
 
     print(f"Aptidão final do indivíduo {control}: {populationWithFitness[individual]['fitness']}\n")
     control += 1
@@ -134,7 +137,7 @@ def isValidSolution(solution: list[PathType]) -> bool:
 
   return True
 
-def recalculatePath(childPath: list[dict[City, str]], cities: list[City]):
+def recalculatePath(childPath: list[PathType], cities: list[City]) -> list[PathType]:
   listID = []
   for child in childPath:
     listID.append(child["city"].getId())
@@ -152,7 +155,7 @@ def recalculatePath(childPath: list[dict[City, str]], cities: list[City]):
   
   return childPathRecalculated
 
-def crossover(parents: list[IndividualType]) -> list[IndividualType]:
+def crossover(parents: list[IndividualType], cities: list[City]) -> list[IndividualType]:
   childrens = []
   while len(childrens) < len(parents) - 1:
     parent1 = random.choice(parents)
