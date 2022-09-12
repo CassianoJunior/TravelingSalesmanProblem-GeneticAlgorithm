@@ -7,7 +7,7 @@ from unionTypes import *
 def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize:int = 10, mutationRate:float = 0.05) -> tuple[dict[str, IndividualType], int, PathDictionaryType]:
   actualPopulation = geneticOperators.generateInitialPopulation(cities, populationSize)
   iterations = 1
-  isPausedExecution = False
+  isPausedExecution = True
 
   bigHorse = {'path': [], 'fitness': 0}
   while iterations < generations:
@@ -76,7 +76,7 @@ def executeGeneticAlgorithm(cities: list[City], generations: int, populationSize
     bestSolution = populationWithFitness[list(populationWithFitness.keys())[0]]
 
     for population in populationWithFitness:
-      if populationWithFitness[population]["fitness"] < bestSolution["fitness"]:
+      if populationWithFitness[population]["fitness"] <= bestSolution["fitness"]:
         bestSolution = populationWithFitness[population]
         bigHorse = bestSolution
 
@@ -136,9 +136,14 @@ def isStagnant(population: dict[str, IndividualType], bestFitness: int) -> bool:
 
 def showPausedMode(isPausedExecution: bool) -> bool:
   if isPausedExecution:
-      answer = input("\nDeseja executar o programa de forma pausada?\n")
-      if(answer.lower() == 'n' or answer.lower() == 'nao' or answer.lower() == 'não'):
-        isPausedExecution = False
+    answer = input("\nDeseja executar o programa de forma pausada?\n")
+    if(answer.lower() == 'n' or answer.lower() == 'nao' or answer.lower() == 'não'):
+      isPausedExecution = False
+    elif answer.lower() == 's' or answer.lower() == 'sim':
+      isPausedExecution = True
+    else:
+      print("Resposta inválida, tente novamente com: sim ou não.")
+      isPausedExecution = showPausedMode(isPausedExecution)
   return isPausedExecution
 
 def pauseCode(msg: str):
